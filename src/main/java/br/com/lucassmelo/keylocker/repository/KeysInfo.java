@@ -13,8 +13,8 @@ public class KeysInfo {
   private KeyType keyType;
   private String value;
   private AccountType accountType;
-  private int agencyNumber;
-  private int accountNumber;
+  private String agencyNumber;
+  private String accountNumber;
   private String accountHolderFirstName;
   private String accountHolderLastName;
 
@@ -53,19 +53,19 @@ public class KeysInfo {
     this.accountType = accountType;
   }
 
-  public int getAgencyNumber() {
+  public String getAgencyNumber() {
     return agencyNumber;
   }
 
-  public void setAgencyNumber(int agencyNumber) {
+  public void setAgencyNumber(String agencyNumber) {
     this.agencyNumber = agencyNumber;
   }
 
-  public int getAccountNumber() {
+  public String getAccountNumber() {
     return accountNumber;
   }
 
-  public void setAccountNumber(int accountNumber) {
+  public void setAccountNumber(String accountNumber) {
     this.accountNumber = accountNumber;
   }
 

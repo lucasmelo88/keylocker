@@ -11,7 +11,7 @@ public class EmailPixKey {
     this.keyValue = keyValue;
   }
 
-  private final Pattern emailPattern = Pattern.compile("^(.+)@(\\S+)$");
+  private final Pattern emailPattern = Pattern.compile("[^\\s]*@[a-z0-9.-]{0,77}$");
 
   public boolean isValid() {
     Matcher matcher = emailPattern.matcher(keyValue);

@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 public class KeyLimitException extends RuntimeException {
 
   public KeyLimitException(String message) {
-    super(String.format(message));
+    super(message);
   }
 
   public HttpStatus getStatus() {

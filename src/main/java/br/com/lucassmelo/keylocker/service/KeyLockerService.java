@@ -1,15 +1,15 @@
 package br.com.lucassmelo.keylocker.service;
 
 import br.com.lucassmelo.keylocker.RandomPixKeyGenerator;
+import br.com.lucassmelo.keylocker.dto.CreateKeyResponseDto;
 import br.com.lucassmelo.keylocker.dto.KeyRequestDto;
-import br.com.lucassmelo.keylocker.dto.KeyResponseDto;
-import br.com.lucassmelo.keylocker.exception.InvalidKeyException;
-import br.com.lucassmelo.keylocker.exception.InvalidParameterException;
-import br.com.lucassmelo.keylocker.exception.KeyLimitException;
+import br.com.lucassmelo.keylocker.logic.AccountNumberManager;
+import br.com.lucassmelo.keylocker.logic.AgencyNumberManager;
 import br.com.lucassmelo.keylocker.logic.KeyTypeValidations;
 import br.com.lucassmelo.keylocker.logic.QuantityKeysValidations;
 import br.com.lucassmelo.keylocker.repository.KeysInfo;
 import br.com.lucassmelo.keylocker.repository.KeysRepository;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,20 +19,34 @@ public class KeyLockerService {
   @Autowired
   private KeysRepository keysRepository;
 
-  public KeyResponseDto processKey(final KeyRequestDto keyRequestDto) {
-    validateKeyValue(keyRequestDto);
-    validateLimitKeyValue(keyRequestDto);
-    validateAgencyNumber(keyRequestDto);
-    validateAccountNumber(keyRequestDto);
+  public CreateKeyResponseDto processKey(final KeyRequestDto keyRequestDto) {
+    QuantityKeysValidations quantityKeysValidations = new QuantityKeysValidations(keysRepository,
+        keyRequestDto);
+    KeyTypeValidations keyTypeValidations = new KeyTypeValidations(
+        keyRequestDto.getKeyType().name(), keyRequestDto.getValue());
+    AccountNumberManager accountNumber = new AccountNumberManager(keyRequestDto.getAccountNumber());
+    AgencyNumberManager agencyNumber = new AgencyNumberManager(keyRequestDto.getAgencyNumber());
+
+    keyTypeValidations.validateKeyValue();
+    quantityKeysValidations.validateLimitKeyValue(keyRequestDto);
+    quantityKeysValidations.validateLimitKeyTypeByAccount(keyRequestDto);
+    agencyNumber.validateAgencyNumber();
+    accountNumber.validateAccountNumber();
+
     return createKey(keyRequestDto);
   }
 
-  public KeyResponseDto createKey(final KeyRequestDto keyRequestDto) {
+  public CreateKeyResponseDto createKey(final KeyRequestDto keyRequestDto) {
     KeysInfo keysInfo = buildKeyInfo(keyRequestDto);
     keysInfo = keysRepository.save(keysInfo);
-    KeyResponseDto keyResponseDto = new KeyResponseDto();
+    CreateKeyResponseDto keyResponseDto = new CreateKeyResponseDto();
     keyResponseDto.setId(keysInfo.getId());
     return keyResponseDto;
+  }
+
+  public List<KeysInfo> getKeysByAgencyAndAccountNumber(final String agencyNumber,
+      final String accountNumber) {
+    return keysRepository.findByAgencyAndAccountNumber(agencyNumber, accountNumber);
   }
 
   private KeysInfo buildKeyInfo(final KeyRequestDto keyRequestDto) {
@@ -55,41 +69,4 @@ public class KeyLockerService {
   private boolean isRandomKey(final KeyRequestDto keyRequestDto) {
     return keyRequestDto.getKeyType().name().equals("ALEATORIA");
   }
-
-  private boolean validateKeyValue(final KeyRequestDto keyRequestDto) {
-    boolean isValidKeyByType = new KeyTypeValidations(keyRequestDto.getKeyType().name(),
-        keyRequestDto.getValue()).validate();
-    if (!isValidKeyByType) {
-      throw new InvalidKeyException(keyRequestDto.getKeyType().name());
-    }
-    return true;
-  }
-
-  private boolean validateAgencyNumber(final KeyRequestDto keyRequestDto) {
-    boolean isValidAgencyNumber = keyRequestDto.isValidAgencyNumber();
-    if (!isValidAgencyNumber) {
-      throw new InvalidParameterException("agencia");
-    }
-    return true;
-  }
-
-  private boolean validateAccountNumber(final KeyRequestDto keyRequestDto) {
-    boolean isValidAccountNumber = keyRequestDto.isValidAccountNumber();
-    if (!isValidAccountNumber) {
-      throw new InvalidParameterException("conta");
-    }
-    return true;
-  }
-
-  private boolean validateLimitKeyValue(final KeyRequestDto keyRequestDto) {
-    boolean isValidLimitByKeyValue = new QuantityKeysValidations(keysRepository,
-        keyRequestDto).isAlreadyExistsKeyWithSameValue();
-    if (!isValidLimitByKeyValue) {
-      throw new KeyLimitException(
-          String.format("Já existe uma chave do tipo %s com esse esse valor",
-              keyRequestDto.getKeyType().name()));
-    }
-    return true;
-  }
-
 }

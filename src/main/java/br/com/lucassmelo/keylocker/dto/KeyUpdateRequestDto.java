@@ -1,16 +1,13 @@
 package br.com.lucassmelo.keylocker.dto;
 
 import br.com.lucassmelo.keylocker.enums.AccountType;
-import br.com.lucassmelo.keylocker.enums.KeyType;
 import org.springframework.lang.NonNull;
 
-public class KeyRequestDto {
+public class KeyUpdateRequestDto {
 
   @NonNull
-  private KeyType keyType;
-  @NonNull
-  private String value;
-  @NonNull
+  private String id;
+
   private AccountType accountType;
   @NonNull
   private String agencyNumber;
@@ -18,25 +15,19 @@ public class KeyRequestDto {
   private String accountNumber;
   @NonNull
   private String accountHolderFirstName;
+
   private String accountHolderLastName;
 
-  public KeyRequestDto() {
+  public KeyUpdateRequestDto() {
   }
 
-  public KeyType getKeyType() {
-    return keyType;
+  @NonNull
+  public String getId() {
+    return id;
   }
 
-  public void setKeyType(KeyType keyType) {
-    this.keyType = keyType;
-  }
-
-  public String getValue() {
-    return value;
-  }
-
-  public void setValue(String value) {
-    this.value = value;
+  public void setId(@NonNull String id) {
+    this.id = id;
   }
 
   public AccountType getAccountType() {
@@ -47,27 +38,30 @@ public class KeyRequestDto {
     this.accountType = accountType;
   }
 
+  @NonNull
   public String getAgencyNumber() {
     return agencyNumber;
   }
 
-  public void setAgencyNumber(String agencyNumber) {
+  public void setAgencyNumber(@NonNull String agencyNumber) {
     this.agencyNumber = agencyNumber;
   }
 
+  @NonNull
   public String getAccountNumber() {
     return accountNumber;
   }
 
-  public void setAccountNumber(String accountNumber) {
+  public void setAccountNumber(@NonNull String accountNumber) {
     this.accountNumber = accountNumber;
   }
 
+  @NonNull
   public String getAccountHolderFirstName() {
     return accountHolderFirstName;
   }
 
-  public void setAccountHolderFirstName(String accountHolderFirstName) {
+  public void setAccountHolderFirstName(@NonNull String accountHolderFirstName) {
     this.accountHolderFirstName = accountHolderFirstName;
   }
 

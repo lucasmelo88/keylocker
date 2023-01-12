@@ -1,9 +1,9 @@
 package br.com.lucassmelo.keylocker.dto;
 
-public class KeyResponseDto {
+public class CreateKeyResponseDto {
   private String id;
 
-  public KeyResponseDto() {
+  public CreateKeyResponseDto() {
   }
 
   public String getId() {

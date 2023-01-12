@@ -1,5 +1,6 @@
 package br.com.lucassmelo.keylocker.logic;
 
+import br.com.lucassmelo.keylocker.exception.InvalidKeyException;
 import br.com.lucassmelo.keylocker.service.CellphonePixKey;
 import br.com.lucassmelo.keylocker.service.EmailPixKey;
 import br.com.lucassmelo.keylocker.service.LegalEntityPixKey;
@@ -30,5 +31,12 @@ public class KeyTypeValidations {
       default:
         return false;
     }
+  }
+
+  public boolean validateKeyValue() {
+    if (!validate()) {
+      throw new InvalidKeyException(keyType);
+    }
+    return true;
   }
 }

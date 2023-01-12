@@ -1,6 +1,7 @@
 package br.com.lucassmelo.keylocker.logic;
 
 import br.com.lucassmelo.keylocker.dto.KeyRequestDto;
+import br.com.lucassmelo.keylocker.exception.KeyLimitException;
 import br.com.lucassmelo.keylocker.repository.KeysInfo;
 import br.com.lucassmelo.keylocker.repository.KeysRepository;
 import java.util.List;
@@ -15,28 +16,46 @@ public class QuantityKeysValidations {
     this.keyRequestDto = keyRequestDto;
   }
 
-  private int countKeysByAccountNumber() {
-    List<KeysInfo> allKeysInfoByAccountNumber = keysRepository.findByAccountNumber(
-        keyRequestDto.getAccountNumber());
-    return allKeysInfoByAccountNumber.size();
+  public List<KeysInfo> keysInfoListByAccountNumberAndType() {
+    return keysRepository.findByAccountNumberAndKeyType(
+        keyRequestDto.getAccountNumber(), keyRequestDto.getKeyType().name());
   }
 
-  private int countKeysByValue() {
-    List<KeysInfo> allKeysInfoByAccountNumber = keysRepository.findByKeyValue(
+
+  public List<KeysInfo> keysInfoListByValue() {
+    return keysRepository.findByKeyValue(
         keyRequestDto.getValue());
-    return allKeysInfoByAccountNumber.size();
   }
 
-  public boolean isValidCountToLegalEntity() {
-    return countKeysByAccountNumber() <= 20;
+  public boolean validateLimitKeyValue(final KeyRequestDto keyRequestDto) {
+    List<KeysInfo> keysInfoListByValue = new QuantityKeysValidations(keysRepository,
+        keyRequestDto).keysInfoListByValue();
+    if (!keysInfoListByValue.isEmpty()) {
+      throw new KeyLimitException(
+          String.format("Já existe uma chave do tipo %s com esse esse valor",
+              keyRequestDto.getKeyType().name()));
+    }
+    return true;
   }
 
-  public boolean isValidCountToNaturalPerson() {
-    return countKeysByAccountNumber() <= 5;
+  public boolean validateLimitKeyTypeByAccount(final KeyRequestDto keyRequestDto) {
+    List<KeysInfo> keysInfoListByValue = new QuantityKeysValidations(keysRepository,
+        keyRequestDto).keysInfoListByAccountNumberAndType();
+    if (!keysInfoListByValue.isEmpty()) {
+      throw new KeyLimitException(
+          String.format("Já existe uma chave do tipo %s para essa conta corrente",
+              keyRequestDto.getKeyType().name()));
+    }
+    return true;
   }
+//TODO ENTENDER COMO DIFERENCIAR UMA CONTA DE PJ E PF
 
-  public boolean isAlreadyExistsKeyWithSameValue() {
-    return countKeysByValue() > 1;
-  }
+//  public boolean isValidCountToLegalEntity() {
+//    return countKeysByAccountNumber() <= 20;
+//  }
+//
+//  public boolean isValidCountToNaturalPerson() {
+//    return countKeysByAccountNumber() <= 5;
+//  }
 
 }
