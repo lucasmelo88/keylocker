@@ -1,33 +1,44 @@
 package br.com.lucassmelo.keylocker.dto;
 
 import br.com.lucassmelo.keylocker.enums.AccountType;
-import org.springframework.lang.NonNull;
+import br.com.lucassmelo.keylocker.enums.KeyType;
 
-public class KeyUpdateRequestDto {
+public class UpdateKeyResponseDto {
 
-  @NonNull
   private String id;
-
+  private KeyType keyType;
+  private String value;
   private AccountType accountType;
-  @NonNull
   private String agencyNumber;
-  @NonNull
   private String accountNumber;
-  @NonNull
   private String accountHolderFirstName;
-
   private String accountHolderLastName;
 
-  public KeyUpdateRequestDto() {
+  public UpdateKeyResponseDto() {
   }
 
-  @NonNull
   public String getId() {
     return id;
   }
 
-  public void setId(@NonNull String id) {
+  public void setId(String id) {
     this.id = id;
+  }
+
+  public KeyType getKeyType() {
+    return keyType;
+  }
+
+  public void setKeyType(KeyType keyType) {
+    this.keyType = keyType;
+  }
+
+  public String getValue() {
+    return value;
+  }
+
+  public void setValue(String value) {
+    this.value = value;
   }
 
   public AccountType getAccountType() {
@@ -38,30 +49,27 @@ public class KeyUpdateRequestDto {
     this.accountType = accountType;
   }
 
-  @NonNull
   public String getAgencyNumber() {
     return agencyNumber;
   }
 
-  public void setAgencyNumber(@NonNull String agencyNumber) {
+  public void setAgencyNumber(String agencyNumber) {
     this.agencyNumber = agencyNumber;
   }
 
-  @NonNull
   public String getAccountNumber() {
     return accountNumber;
   }
 
-  public void setAccountNumber(@NonNull String accountNumber) {
+  public void setAccountNumber(String accountNumber) {
     this.accountNumber = accountNumber;
   }
 
-  @NonNull
   public String getAccountHolderFirstName() {
     return accountHolderFirstName;
   }
 
-  public void setAccountHolderFirstName(@NonNull String accountHolderFirstName) {
+  public void setAccountHolderFirstName(String accountHolderFirstName) {
     this.accountHolderFirstName = accountHolderFirstName;
   }
 

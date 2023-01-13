@@ -1,6 +1,5 @@
 package br.com.lucassmelo.keylocker.logic;
 
-import br.com.lucassmelo.keylocker.dto.KeyRequestDto;
 import br.com.lucassmelo.keylocker.exception.KeyLimitException;
 import br.com.lucassmelo.keylocker.repository.KeysInfo;
 import br.com.lucassmelo.keylocker.repository.KeysRepository;
@@ -9,42 +8,37 @@ import java.util.List;
 public class QuantityKeysValidations {
 
   private KeysRepository keysRepository;
-  private KeyRequestDto keyRequestDto;
 
-  public QuantityKeysValidations(KeysRepository keysRepository, KeyRequestDto keyRequestDto) {
+  public QuantityKeysValidations(KeysRepository keysRepository) {
     this.keysRepository = keysRepository;
-    this.keyRequestDto = keyRequestDto;
   }
 
-  public List<KeysInfo> keysInfoListByAccountNumberAndType() {
+  public List<KeysInfo> keysInfoListByAccountNumberAndType(final String accountNumber,
+      final String keyType) {
     return keysRepository.findByAccountNumberAndKeyType(
-        keyRequestDto.getAccountNumber(), keyRequestDto.getKeyType().name());
+        accountNumber, keyType);
   }
 
 
-  public List<KeysInfo> keysInfoListByValue() {
+  public List<KeysInfo> keysInfoListByValue(final String keyValue) {
     return keysRepository.findByKeyValue(
-        keyRequestDto.getValue());
+        keyValue);
   }
 
-  public boolean validateLimitKeyValue(final KeyRequestDto keyRequestDto) {
-    List<KeysInfo> keysInfoListByValue = new QuantityKeysValidations(keysRepository,
-        keyRequestDto).keysInfoListByValue();
-    if (!keysInfoListByValue.isEmpty()) {
+  public boolean validateLimitKeyValue(final String keyValue, final String keyType) {
+    if (!keysInfoListByValue(keyValue).isEmpty()) {
       throw new KeyLimitException(
           String.format("Já existe uma chave do tipo %s com esse esse valor",
-              keyRequestDto.getKeyType().name()));
+              keyType));
     }
     return true;
   }
 
-  public boolean validateLimitKeyTypeByAccount(final KeyRequestDto keyRequestDto) {
-    List<KeysInfo> keysInfoListByValue = new QuantityKeysValidations(keysRepository,
-        keyRequestDto).keysInfoListByAccountNumberAndType();
-    if (!keysInfoListByValue.isEmpty()) {
+  public boolean validateLimitKeyTypeByAccount(final String accountNumber, final String keyType) {
+    if (!keysInfoListByAccountNumberAndType(accountNumber, keyType).isEmpty()) {
       throw new KeyLimitException(
           String.format("Já existe uma chave do tipo %s para essa conta corrente",
-              keyRequestDto.getKeyType().name()));
+              keyType));
     }
     return true;
   }
