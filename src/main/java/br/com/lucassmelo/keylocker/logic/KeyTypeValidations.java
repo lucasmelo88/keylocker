@@ -11,30 +11,36 @@ public class KeyTypeValidations {
   private final String keyValue;
   private final String keyType;
 
+  private boolean isValid = false;
+
   public KeyTypeValidations(String keyType, String keyValue) {
     this.keyType = keyType;
     this.keyValue = keyValue;
   }
 
-  public boolean validate() {
+  public void validate() {
     switch (keyType) {
       case "CELULAR":
-        return new CellphonePixKey(keyValue).isValid();
+        isValid = new CellphonePixKey(keyValue).isValid();
+        break;
       case "EMAIL":
-        return new EmailPixKey(keyValue).isValid();
+        isValid = new EmailPixKey(keyValue).isValid();
+        break;
       case "CPF":
-        return new NaturalPersonPixKey(keyValue).isValid();
+        isValid = new NaturalPersonPixKey(keyValue).isValid();
+        break;
       case "CNPJ":
-        return new LegalEntityPixKey(keyValue).isValid();
+        isValid = new LegalEntityPixKey(keyValue).isValid();
+        break;
       case "ALEATORIA":
-        return true;
-      default:
-        return false;
+        isValid = true;
+        break;
     }
   }
 
   public boolean validateKeyValue() {
-    if (!validate()) {
+    validate();
+    if (!isValid) {
       throw new InvalidKeyException(keyType);
     }
     return true;

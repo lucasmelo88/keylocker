@@ -14,7 +14,7 @@ public class AgencyNumberManager {
   }
 
   private final Pattern agencyNumberPattern = Pattern.compile(
-      "[0-9]{0,4}");
+      "^[0-9]{0,4}$");
 
   public boolean isValid() {
     Matcher matcher = agencyNumberPattern.matcher(agencyNumber);

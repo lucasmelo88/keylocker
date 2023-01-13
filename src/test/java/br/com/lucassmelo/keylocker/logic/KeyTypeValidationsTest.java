@@ -2,10 +2,16 @@ package br.com.lucassmelo.keylocker.logic;
 
 import br.com.lucassmelo.keylocker.dto.KeyRequestDto;
 import br.com.lucassmelo.keylocker.enums.KeyType;
+import br.com.lucassmelo.keylocker.exception.InvalidKeyException;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class KeyTypeValidationsTest {
+
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
 
   @Test
   public void shouldReturnTrueWhenCPFKeyIsValid() {
@@ -15,7 +21,7 @@ public class KeyTypeValidationsTest {
     KeyTypeValidations keyTypeValidations = new KeyTypeValidations(
         keyRequestDto.getKeyType().name(), keyRequestDto.getValue());
 
-    Assert.assertTrue(keyTypeValidations.validate());
+    Assert.assertTrue(keyTypeValidations.validateKeyValue());
   }
 
   @Test
@@ -26,7 +32,9 @@ public class KeyTypeValidationsTest {
     KeyTypeValidations keyTypeValidations = new KeyTypeValidations(
         keyRequestDto.getKeyType().name(), keyRequestDto.getValue());
 
-    Assert.assertFalse(keyTypeValidations.validate());
+    exception.expect(InvalidKeyException.class);
+
+    keyTypeValidations.validateKeyValue();
   }
 
   @Test
@@ -37,7 +45,7 @@ public class KeyTypeValidationsTest {
     KeyTypeValidations keyTypeValidations = new KeyTypeValidations(
         keyRequestDto.getKeyType().name(), keyRequestDto.getValue());
 
-    Assert.assertTrue(keyTypeValidations.validate());
+    Assert.assertTrue(keyTypeValidations.validateKeyValue());
   }
 
   @Test
@@ -48,7 +56,9 @@ public class KeyTypeValidationsTest {
     KeyTypeValidations keyTypeValidations = new KeyTypeValidations(
         keyRequestDto.getKeyType().name(), keyRequestDto.getValue());
 
-    Assert.assertFalse(keyTypeValidations.validate());
+    exception.expect(InvalidKeyException.class);
+
+    keyTypeValidations.validateKeyValue();
   }
 
   @Test
@@ -59,7 +69,7 @@ public class KeyTypeValidationsTest {
     KeyTypeValidations keyTypeValidations = new KeyTypeValidations(
         keyRequestDto.getKeyType().name(), keyRequestDto.getValue());
 
-    Assert.assertTrue(keyTypeValidations.validate());
+    Assert.assertTrue(keyTypeValidations.validateKeyValue());
   }
 
   @Test
@@ -70,7 +80,9 @@ public class KeyTypeValidationsTest {
     KeyTypeValidations keyTypeValidations = new KeyTypeValidations(
         keyRequestDto.getKeyType().name(), keyRequestDto.getValue());
 
-    Assert.assertFalse(keyTypeValidations.validate());
+    exception.expect(InvalidKeyException.class);
+
+    keyTypeValidations.validateKeyValue();
   }
 
   @Test
@@ -81,7 +93,7 @@ public class KeyTypeValidationsTest {
     KeyTypeValidations keyTypeValidations = new KeyTypeValidations(
         keyRequestDto.getKeyType().name(), keyRequestDto.getValue());
 
-    Assert.assertTrue(keyTypeValidations.validate());
+    Assert.assertTrue(keyTypeValidations.validateKeyValue());
   }
 
   @Test
@@ -92,7 +104,9 @@ public class KeyTypeValidationsTest {
     KeyTypeValidations keyTypeValidations = new KeyTypeValidations(
         keyRequestDto.getKeyType().name(), keyRequestDto.getValue());
 
-    Assert.assertFalse(keyTypeValidations.validate());
+    exception.expect(InvalidKeyException.class);
+
+    keyTypeValidations.validateKeyValue();
   }
 
   @Test
@@ -101,7 +115,7 @@ public class KeyTypeValidationsTest {
     keyRequestDto.setKeyType(KeyType.ALEATORIA);
     KeyTypeValidations keyTypeValidations = new KeyTypeValidations(
         keyRequestDto.getKeyType().name(), keyRequestDto.getValue());
-    Assert.assertTrue(keyTypeValidations.validate());
+    Assert.assertTrue(keyTypeValidations.validateKeyValue());
   }
 
   @Test
@@ -109,7 +123,9 @@ public class KeyTypeValidationsTest {
     KeyRequestDto keyRequestDto = new KeyRequestDto();
     KeyTypeValidations keyTypeValidations = new KeyTypeValidations(
         "abc", keyRequestDto.getValue());
-    Assert.assertFalse(keyTypeValidations.validate());
+    exception.expect(InvalidKeyException.class);
+
+    keyTypeValidations.validateKeyValue();
   }
 
 }

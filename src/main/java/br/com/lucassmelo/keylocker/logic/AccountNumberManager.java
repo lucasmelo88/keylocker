@@ -13,7 +13,7 @@ public class AccountNumberManager {
   }
 
   private final Pattern accountNumberPattern = Pattern.compile(
-      "[0-9]{0,8}");
+      "^[0-9]{0,8}$");
 
   public boolean isValid() {
     Matcher matcher = accountNumberPattern.matcher(accountNumber);
