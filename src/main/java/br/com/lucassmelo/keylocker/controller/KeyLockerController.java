@@ -4,6 +4,7 @@ import br.com.lucassmelo.keylocker.dto.KeyRequestDto;
 import br.com.lucassmelo.keylocker.dto.UpdateKeyRequestDto;
 import br.com.lucassmelo.keylocker.exception.AccountKeyLimitException;
 import br.com.lucassmelo.keylocker.exception.InvalidKeyException;
+import br.com.lucassmelo.keylocker.exception.InvalidOperationException;
 import br.com.lucassmelo.keylocker.exception.InvalidParameterException;
 import br.com.lucassmelo.keylocker.exception.KeyLimitException;
 import br.com.lucassmelo.keylocker.exception.KeyNotFoundException;
@@ -37,7 +38,7 @@ public class KeyLockerController {
   public ResponseEntity<?> saveKey(
       @ApiParam(value = "keyRequestDto", required = true) @RequestBody KeyRequestDto keyRequestDto) {
     try {
-      return new ResponseEntity<>(keyLockerService.processKey(keyRequestDto), HttpStatus.CREATED);
+      return new ResponseEntity<>(keyLockerService.createKey(keyRequestDto), HttpStatus.CREATED);
     } catch (AccountKeyLimitException | InvalidKeyException | KeyLimitException |
              InvalidParameterException ex) {
       return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
@@ -64,7 +65,7 @@ public class KeyLockerController {
       return new ResponseEntity<>(
           keyLockerService.updateKey(updateKeyRequestDto), HttpStatus.CREATED);
     } catch (AccountKeyLimitException | InvalidKeyException | KeyLimitException |
-             KeyNotFoundException | InvalidParameterException ex) {
+             KeyNotFoundException | InvalidOperationException | InvalidParameterException ex) {
       HttpStatus status;
       if (ex instanceof KeyNotFoundException) {
         status = HttpStatus.NOT_FOUND;

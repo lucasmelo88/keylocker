@@ -5,6 +5,8 @@ import br.com.lucassmelo.keylocker.dto.CreateKeyResponseDto;
 import br.com.lucassmelo.keylocker.dto.KeyRequestDto;
 import br.com.lucassmelo.keylocker.dto.UpdateKeyRequestDto;
 import br.com.lucassmelo.keylocker.dto.UpdateKeyResponseDto;
+import br.com.lucassmelo.keylocker.enums.KeyType;
+import br.com.lucassmelo.keylocker.exception.InvalidOperationException;
 import br.com.lucassmelo.keylocker.exception.KeyNotFoundException;
 import br.com.lucassmelo.keylocker.logic.AccountNumberManager;
 import br.com.lucassmelo.keylocker.logic.AgencyNumberManager;
@@ -23,10 +25,7 @@ public class KeyLockerService {
   @Autowired
   private KeysRepository keysRepository;
 
-  public CreateKeyResponseDto processKey(final KeyRequestDto keyRequestDto) {
-    QuantityKeysValidations quantityKeysValidations = new QuantityKeysValidations(keysRepository);
-    KeyTypeValidations keyTypeValidations = new KeyTypeValidations(
-        keyRequestDto.getKeyType().name(), keyRequestDto.getValue());
+  public CreateKeyResponseDto createKey(final KeyRequestDto keyRequestDto) {
     AccountNumberManager accountNumber = new AccountNumberManager(keyRequestDto.getAccountNumber());
     AgencyNumberManager agencyNumber = new AgencyNumberManager(keyRequestDto.getAgencyNumber());
 
@@ -37,10 +36,6 @@ public class KeyLockerService {
     agencyNumber.validateAgencyNumber();
     accountNumber.validateAccountNumber();
 
-    return createKey(keyRequestDto);
-  }
-
-  public CreateKeyResponseDto createKey(final KeyRequestDto keyRequestDto) {
     KeysInfo keysInfo = buildKeyInfo(keyRequestDto);
     keysInfo = keysRepository.save(keysInfo);
     CreateKeyResponseDto keyResponseDto = new CreateKeyResponseDto();
@@ -50,39 +45,42 @@ public class KeyLockerService {
 
   public UpdateKeyResponseDto updateKey(final UpdateKeyRequestDto updateKeyRequestDto) {
     KeysInfo keyToUpdate;
-    List<KeysInfo> allKeysFromAgencyAndAccountNUmber = getKeysByAgencyAndAccountNumber(
-        updateKeyRequestDto.getAgencyNumber(), updateKeyRequestDto.getAccountNumber());
+    if (!updateKeyRequestDto.getKeyType().equals(KeyType.ALEATORIA)) {
+      List<KeysInfo> allKeysFromAgencyAndAccountNumber = getKeysByAgencyAndAccountNumber(
+          updateKeyRequestDto.getAgencyNumber(), updateKeyRequestDto.getAccountNumber());
+      Optional<KeysInfo> keysInfoFoundWithSameType = allKeysFromAgencyAndAccountNumber.stream()
+          .filter(keysInfo ->
+              keysInfo.getKeyType().equals(updateKeyRequestDto.getKeyType())).findFirst();
+      if (keysInfoFoundWithSameType.isPresent()) {
+        keyToUpdate = keysInfoFoundWithSameType.get();
+      } else {
+        throw new KeyNotFoundException(updateKeyRequestDto.getKeyType().name());
+      }
 
-    Optional<KeysInfo> keysInfoFoundWithSameType = allKeysFromAgencyAndAccountNUmber.stream()
-        .filter(keysInfo ->
-            keysInfo.getKeyType().equals(updateKeyRequestDto.getKeyType())).findFirst();
+      executeKeyTypeValidations(updateKeyRequestDto.getValue(),
+          updateKeyRequestDto.getKeyType().name());
+      executeQuantityValidations(updateKeyRequestDto.getValue(),
+          updateKeyRequestDto.getKeyType().name());
 
-    if (keysInfoFoundWithSameType.isPresent()) {
-      keyToUpdate = keysInfoFoundWithSameType.get();
+      keyToUpdate.setValue(updateKeyRequestDto.getValue());
+
+      KeysInfo keysInfo = keysRepository.save(keyToUpdate);
+
+      UpdateKeyResponseDto updateKeyResponseDto = new UpdateKeyResponseDto();
+      updateKeyResponseDto.setId(keysInfo.getId());
+      updateKeyResponseDto.setKeyType(keysInfo.getKeyType());
+      updateKeyResponseDto.setValue(keysInfo.getValue());
+      updateKeyResponseDto.setAgencyNumber(keysInfo.getAgencyNumber());
+      updateKeyResponseDto.setAccountNumber(keysInfo.getAccountNumber());
+      updateKeyResponseDto.setAccountType(keysInfo.getAccountType());
+      updateKeyResponseDto.setAccountHolderFirstName(keysInfo.getAccountHolderFirstName());
+      updateKeyResponseDto.setAccountHolderLastName(keysInfo.getAccountHolderLastName());
+      return updateKeyResponseDto;
     } else {
-      throw new KeyNotFoundException(updateKeyRequestDto.getKeyType().name());
+      throw new InvalidOperationException("Não é possível alterar uma chave aleatória");
     }
-
-    executeKeyTypeValidations(updateKeyRequestDto.getValue(),
-        updateKeyRequestDto.getKeyType().name());
-    executeQuantityValidations(updateKeyRequestDto.getValue(),
-        updateKeyRequestDto.getKeyType().name());
-
-    keyToUpdate.setValue(updateKeyRequestDto.getValue());
-
-    KeysInfo keysInfo = keysRepository.save(keyToUpdate);
-
-    UpdateKeyResponseDto updateKeyResponseDto = new UpdateKeyResponseDto();
-    updateKeyResponseDto.setId(keysInfo.getId());
-    updateKeyResponseDto.setKeyType(keysInfo.getKeyType());
-    updateKeyResponseDto.setValue(keysInfo.getValue());
-    updateKeyResponseDto.setAgencyNumber(keysInfo.getAgencyNumber());
-    updateKeyResponseDto.setAccountNumber(keysInfo.getAccountNumber());
-    updateKeyResponseDto.setAccountType(keysInfo.getAccountType());
-    updateKeyResponseDto.setAccountHolderFirstName(keysInfo.getAccountHolderFirstName());
-    updateKeyResponseDto.setAccountHolderLastName(keysInfo.getAccountHolderLastName());
-    return updateKeyResponseDto;
   }
+
 
   public List<KeysInfo> getKeysByAgencyAndAccountNumber(final String agencyNumber,
       final String accountNumber) {

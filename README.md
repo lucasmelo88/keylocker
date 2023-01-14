@@ -1,24 +1,40 @@
-1-
-mvn clean install
+# Running remotely
 
-2-
-docker build --tag keylocker:0.0.1-SNAPSHOT .
+### Build, compile and test application
+* mvn clean install
+### Build image application
+* docker build --tag keylocker:0.0.1-SNAPSHOT .
+### Pull and start application
+* docker-compose up
+### Access swagger docs
+* http://{docker-container-ipv4}:8082/keylocker/swagger-ui.html
 
-3-
-docker-compose up
+# Debugging
+* Start mongodb container
+* Stop application container
+* Start application setting vm options to use mongodb container 
+  * -Dspring.data.mongodb.host=localhost -Dspring.data.mongodb.port=27018
 
-4-
-container = "IPAddress": "172.21.0.3"
-
-5-
-http://172.21.0.3:8082/keylocker/swagger-ui.html#/key-locker-controller
-
+# Payload examples
+## Create
+```
 {
-"accountHolderFirstName": "Lucas",
-"accountHolderLastName": "Melo",
-"accountNumber": "227053",
-"accountType": "CORRENTE",
-"agencyNumber": "1565",
-"keyType": "CELULAR",
-"value": "+5519991563697"
+  "accountHolderFirstName": "Joao",
+  "accountHolderLastName": "Silva",
+  "accountNumber": "00000001",
+  "accountType": "CORRENTE",
+  "agencyNumber": "0001",
+  "keyType": "CELULAR",
+  "value": "+5535983788879"
 }
+```
+
+## Update
+```
+{
+  "accountNumber": "00000001",
+  "agencyNumber": "0001",
+  "keyType": "CELULAR",
+  "value": "+5535983788500"
+}
+```
