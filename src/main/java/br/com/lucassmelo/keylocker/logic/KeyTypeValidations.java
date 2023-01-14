@@ -3,15 +3,18 @@ package br.com.lucassmelo.keylocker.logic;
 import br.com.lucassmelo.keylocker.exception.InvalidKeyException;
 import br.com.lucassmelo.keylocker.service.CellphonePixKey;
 import br.com.lucassmelo.keylocker.service.EmailPixKey;
+import br.com.lucassmelo.keylocker.service.KeyLockerService;
 import br.com.lucassmelo.keylocker.service.LegalEntityPixKey;
 import br.com.lucassmelo.keylocker.service.NaturalPersonPixKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KeyTypeValidations {
-
   private final String keyValue;
   private final String keyType;
-
   private boolean isValid = false;
+  private static final Logger logger = LoggerFactory
+      .getLogger(KeyTypeValidations.class.getName());
 
   public KeyTypeValidations(String keyType, String keyValue) {
     this.keyType = keyType;
@@ -41,6 +44,7 @@ public class KeyTypeValidations {
   public boolean validateKeyValue() {
     validate();
     if (!isValid) {
+      logger.error("Chave inválida! O Valor informado não é suportado para nenhum tipo de chave");
       throw new InvalidKeyException(keyType);
     }
     return true;

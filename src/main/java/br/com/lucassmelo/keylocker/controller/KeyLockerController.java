@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,6 +56,20 @@ public class KeyLockerController {
     return new ResponseEntity<>(
         keyLockerService.getKeysByAgencyAndAccountNumber(agencyNumber, accountNumber),
         HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/keys/{keyId}")
+  @ApiOperation("Find pix key by id")
+  public ResponseEntity<?> listKeyById(
+      @PathVariable(value = "keyId") String keyId) {
+    try {
+      return new ResponseEntity<>(
+          keyLockerService.getKeyById(keyId),
+          HttpStatus.OK);
+    } catch (KeyNotFoundException ex) {
+      return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
   }
 
   @PutMapping(value = "/keys")

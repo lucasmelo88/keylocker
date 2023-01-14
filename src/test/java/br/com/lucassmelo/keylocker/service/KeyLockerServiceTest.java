@@ -16,6 +16,7 @@ import br.com.lucassmelo.keylocker.repository.KeysRepository;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -138,6 +139,23 @@ public class KeyLockerServiceTest {
     Assert.assertThrows(InvalidOperationException.class,
         () -> keyLockerService.updateKey(updateKeyRequestDto));
 
+  }
+
+  @Test
+  public void shouldReturnAKeyInfoWhenRequestedKeyIsValid() {
+    KeysInfo keysInfo = new KeysInfo();
+    keysInfo.setId("63c08424b0940a7217195c5e");
+    keysInfo.setKeyType(KeyType.CPF);
+    when(keysRepository.findById(Mockito.anyString())).thenReturn(Optional.of(keysInfo));
+    Assert.assertEquals("63c08424b0940a7217195c5e",
+        keyLockerService.getKeyById("63c08424b0940a7217195c5e").getId());
+  }
+
+  @Test
+  public void shouldThrownExceptionWhenRequestedKeyWasNotFound() {
+    when(keysRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
+    Assert.assertThrows(KeyNotFoundException.class,
+        () -> keyLockerService.getKeyById("63c08424b0940a7217195c5e"));
   }
 
   @Test

@@ -16,35 +16,43 @@ import br.com.lucassmelo.keylocker.repository.KeysInfo;
 import br.com.lucassmelo.keylocker.repository.KeysRepository;
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class KeyLockerService {
 
+  private static final Logger logger = LoggerFactory
+      .getLogger(KeyLockerService.class.getName());
+
   @Autowired
   private KeysRepository keysRepository;
 
   public CreateKeyResponseDto createKey(final KeyRequestDto keyRequestDto) {
+    logger.info("Iniciando criação de chave");
     AccountNumberManager accountNumber = new AccountNumberManager(keyRequestDto.getAccountNumber());
     AgencyNumberManager agencyNumber = new AgencyNumberManager(keyRequestDto.getAgencyNumber());
-
+    logger.info("Iniciando validação para criação de chaves");
     executeKeyTypeValidations(keyRequestDto.getValue(),
         keyRequestDto.getKeyType().name());
     executeQuantityValidations(keyRequestDto.getValue(),
         keyRequestDto.getKeyType().name());
     agencyNumber.validateAgencyNumber();
     accountNumber.validateAccountNumber();
-
+    logger.info("Chave válida para cadastro, iniciando processo de persistência");
     KeysInfo keysInfo = buildKeyInfo(keyRequestDto);
     keysInfo = keysRepository.save(keysInfo);
     CreateKeyResponseDto keyResponseDto = new CreateKeyResponseDto();
     keyResponseDto.setId(keysInfo.getId());
+    logger.info("Uma chave com o id {} foi criada com sucesso", keysInfo.getId());
     return keyResponseDto;
   }
 
   public UpdateKeyResponseDto updateKey(final UpdateKeyRequestDto updateKeyRequestDto) {
     KeysInfo keyToUpdate;
+    logger.info("Iniciando processo de atualização de chave");
     if (!updateKeyRequestDto.getKeyType().equals(KeyType.ALEATORIA)) {
       List<KeysInfo> allKeysFromAgencyAndAccountNumber = getKeysByAgencyAndAccountNumber(
           updateKeyRequestDto.getAgencyNumber(), updateKeyRequestDto.getAccountNumber());
@@ -54,14 +62,17 @@ public class KeyLockerService {
       if (keysInfoFoundWithSameType.isPresent()) {
         keyToUpdate = keysInfoFoundWithSameType.get();
       } else {
-        throw new KeyNotFoundException(updateKeyRequestDto.getKeyType().name());
+        logger.error("Não foi encontrada nenhuma chave para atualização");
+        throw new KeyNotFoundException(String.format("Uma chave com o tipo %s não foi encontrada",
+            updateKeyRequestDto.getKeyType().name()));
       }
-
+      logger.info("Iniciando validação para atualização de chaves");
       executeKeyTypeValidations(updateKeyRequestDto.getValue(),
           updateKeyRequestDto.getKeyType().name());
       executeQuantityValidations(updateKeyRequestDto.getValue(),
           updateKeyRequestDto.getKeyType().name());
 
+      logger.info("Chave válida para atualização, iniciando processo de persistência");
       keyToUpdate.setValue(updateKeyRequestDto.getValue());
 
       KeysInfo keysInfo = keysRepository.save(keyToUpdate);
@@ -75,8 +86,10 @@ public class KeyLockerService {
       updateKeyResponseDto.setAccountType(keysInfo.getAccountType());
       updateKeyResponseDto.setAccountHolderFirstName(keysInfo.getAccountHolderFirstName());
       updateKeyResponseDto.setAccountHolderLastName(keysInfo.getAccountHolderLastName());
+      logger.info("Finalizando processo de atualização de chave com sucesso");
       return updateKeyResponseDto;
     } else {
+      logger.error("Não foi possível atualizar uma chave do tipo aleatória");
       throw new InvalidOperationException("Não é possível alterar uma chave aleatória");
     }
   }
@@ -87,10 +100,24 @@ public class KeyLockerService {
     return keysRepository.findByAgencyAndAccountNumber(agencyNumber, accountNumber);
   }
 
+  public KeysInfo getKeyById(final String keyId) {
+    Optional<KeysInfo> foundKeyInfo = keysRepository.findById(keyId);
+    if (foundKeyInfo.isPresent()) {
+      return foundKeyInfo.get();
+    } else {
+      logger.error("Não foi encontrada nenhuma chave");
+      throw new KeyNotFoundException(String.format("Uma chave com o id %s não foi encontrada",
+          keyId));
+    }
+
+  }
+
   private KeysInfo buildKeyInfo(final KeyRequestDto keyRequestDto) {
     KeysInfo keysInfo = new KeysInfo();
     if (isRandomKey(keyRequestDto)) {
+      logger.info("A chave informada é do tipo aleatoria, gerando...");
       String randomKey = new RandomPixKeyGenerator().generateKey();
+      logger.info("A chave aleatoria gerada: {}", randomKey);
       keysInfo.setValue(randomKey);
     } else {
       keysInfo.setValue(keyRequestDto.getValue());
