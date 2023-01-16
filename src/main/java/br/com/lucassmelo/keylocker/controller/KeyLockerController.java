@@ -1,8 +1,9 @@
 package br.com.lucassmelo.keylocker.controller;
 
+import br.com.lucassmelo.keylocker.dto.DeleteKeyResponseDto;
 import br.com.lucassmelo.keylocker.dto.KeyRequestDto;
 import br.com.lucassmelo.keylocker.dto.UpdateKeyRequestDto;
-import br.com.lucassmelo.keylocker.exception.AccountKeyLimitException;
+import br.com.lucassmelo.keylocker.exception.DeleteKeyException;
 import br.com.lucassmelo.keylocker.exception.InvalidKeyException;
 import br.com.lucassmelo.keylocker.exception.InvalidOperationException;
 import br.com.lucassmelo.keylocker.exception.InvalidParameterException;
@@ -34,13 +35,13 @@ public class KeyLockerController {
   @Autowired
   private KeyLockerService keyLockerService;
 
-  @PostMapping(value = "/keys")
+  @PostMapping(value = "/keys/create")
   @ApiOperation("Create new Pix Key")
   public ResponseEntity<?> saveKey(
       @ApiParam(value = "keyRequestDto", required = true) @RequestBody KeyRequestDto keyRequestDto) {
     try {
       return new ResponseEntity<>(keyLockerService.createKey(keyRequestDto), HttpStatus.CREATED);
-    } catch (AccountKeyLimitException | InvalidKeyException | KeyLimitException |
+    } catch (InvalidKeyException | KeyLimitException |
              InvalidParameterException ex) {
       return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
     }
@@ -58,7 +59,7 @@ public class KeyLockerController {
         HttpStatus.OK);
   }
 
-  @GetMapping(value = "/keys/{keyId}")
+  @GetMapping(value = "/keys/{keyId}/findById")
   @ApiOperation("Find pix key by id")
   public ResponseEntity<?> listKeyById(
       @PathVariable(value = "keyId") String keyId) {
@@ -69,17 +70,29 @@ public class KeyLockerController {
     } catch (KeyNotFoundException ex) {
       return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
-
   }
 
-  @PutMapping(value = "/keys")
+  @PutMapping(value = "/keys/{keyId}/delete")
+  @ApiOperation("Delete pix key by id")
+  public ResponseEntity<?> deleteKeyById(
+      @PathVariable(value = "keyId") String keyId) {
+    try {
+      return new ResponseEntity<>(
+          keyLockerService.deleteById(keyId),
+          HttpStatus.OK);
+    } catch (KeyNotFoundException | DeleteKeyException ex) {
+      return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+  }
+
+  @PutMapping(value = "/keys/update")
   @ApiOperation("Update a pix key ")
   public ResponseEntity<?> updateKey(
       @ApiParam(value = "updateKeyRequestDto") @RequestBody final UpdateKeyRequestDto updateKeyRequestDto) {
     try {
       return new ResponseEntity<>(
           keyLockerService.updateKey(updateKeyRequestDto), HttpStatus.CREATED);
-    } catch (AccountKeyLimitException | InvalidKeyException | KeyLimitException |
+    } catch (InvalidKeyException | KeyLimitException |
              KeyNotFoundException | InvalidOperationException | InvalidParameterException ex) {
       HttpStatus status;
       if (ex instanceof KeyNotFoundException) {

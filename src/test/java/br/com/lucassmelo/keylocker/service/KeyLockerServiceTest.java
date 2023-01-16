@@ -2,6 +2,7 @@ package br.com.lucassmelo.keylocker.service;
 
 import static org.mockito.Mockito.when;
 
+import br.com.lucassmelo.keylocker.FormattedDateTime;
 import br.com.lucassmelo.keylocker.RandomPixKeyGenerator;
 import br.com.lucassmelo.keylocker.dto.CreateKeyResponseDto;
 import br.com.lucassmelo.keylocker.dto.KeyRequestDto;
@@ -9,16 +10,20 @@ import br.com.lucassmelo.keylocker.dto.UpdateKeyRequestDto;
 import br.com.lucassmelo.keylocker.dto.UpdateKeyResponseDto;
 import br.com.lucassmelo.keylocker.enums.AccountType;
 import br.com.lucassmelo.keylocker.enums.KeyType;
+import br.com.lucassmelo.keylocker.exception.DeleteKeyException;
 import br.com.lucassmelo.keylocker.exception.InvalidOperationException;
 import br.com.lucassmelo.keylocker.exception.KeyNotFoundException;
 import br.com.lucassmelo.keylocker.repository.KeysInfo;
 import br.com.lucassmelo.keylocker.repository.KeysRepository;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -33,6 +38,9 @@ public class KeyLockerServiceTest {
 
   @InjectMocks
   private KeyLockerService keyLockerService = new KeyLockerService();
+
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
 
   @Test
   public void shouldCreateKeyWithSuccess() {
@@ -129,6 +137,35 @@ public class KeyLockerServiceTest {
   }
 
   @Test
+  public void shouldThrownExceptionWhenTryToUpdateKeyAlreadyDeleted() {
+    UpdateKeyRequestDto updateKeyRequestDto = new UpdateKeyRequestDto();
+    updateKeyRequestDto.setKeyType(KeyType.CPF);
+    updateKeyRequestDto.setValue("38445887789");
+    updateKeyRequestDto.setAgencyNumber("1845");
+    updateKeyRequestDto.setAccountNumber("48998745");
+
+    KeysInfo mockRetrievedKeyInfo = new KeysInfo();
+    mockRetrievedKeyInfo.setId("63c08424b0940a7217195c5e");
+    mockRetrievedKeyInfo.setKeyType(KeyType.CPF);
+    mockRetrievedKeyInfo.setValue("11447884552");
+    mockRetrievedKeyInfo.setAccountType(AccountType.CORRENTE);
+    mockRetrievedKeyInfo.setAgencyNumber("1845");
+    mockRetrievedKeyInfo.setAccountNumber("48998745");
+    mockRetrievedKeyInfo.setAccountHolderFirstName("Joao");
+    mockRetrievedKeyInfo.setAccountHolderLastName("Silva");
+    mockRetrievedKeyInfo.setCreatedAt(new FormattedDateTime().getFormattedDateTimeNow());
+    mockRetrievedKeyInfo.setDeletedAt(new FormattedDateTime().getFormattedDateTimeNow());
+
+    List<KeysInfo> allKeysByTypeAndAccountNumberMock = Arrays.asList(mockRetrievedKeyInfo);
+
+    when(keysRepository.findByAgencyAndAccountNumber(Mockito.anyString(),
+        Mockito.anyString())).thenReturn(allKeysByTypeAndAccountNumberMock);
+
+    exception.expect(DeleteKeyException.class);
+    keyLockerService.updateKey(updateKeyRequestDto);
+  }
+
+  @Test
   public void shouldThrownExceptionWhenTryToUpdateRandomKey() {
     UpdateKeyRequestDto updateKeyRequestDto = new UpdateKeyRequestDto();
     updateKeyRequestDto.setKeyType(KeyType.ALEATORIA);
@@ -138,7 +175,6 @@ public class KeyLockerServiceTest {
 
     Assert.assertThrows(InvalidOperationException.class,
         () -> keyLockerService.updateKey(updateKeyRequestDto));
-
   }
 
   @Test
@@ -149,6 +185,45 @@ public class KeyLockerServiceTest {
     when(keysRepository.findById(Mockito.anyString())).thenReturn(Optional.of(keysInfo));
     Assert.assertEquals("63c08424b0940a7217195c5e",
         keyLockerService.getKeyById("63c08424b0940a7217195c5e").getId());
+  }
+
+  @Test
+  public void shouldDeleteAKeyWhenRequestedKeyIsValid() {
+    KeysInfo keysInfoToDelete = new KeysInfo();
+    keysInfoToDelete.setId("63c08424b0940a7217195c5e");
+    keysInfoToDelete.setCreatedAt(new FormattedDateTime().getFormattedDateTimeNow());
+    keysInfoToDelete.setKeyType(KeyType.CPF);
+
+    KeysInfo keysInfoDeleted = new KeysInfo();
+    keysInfoDeleted.setId("63c08424b0940a7217195c5e");
+    keysInfoDeleted.setCreatedAt(new FormattedDateTime().getFormattedDateTimeNow());
+    keysInfoDeleted.setDeletedAt(new FormattedDateTime().getFormattedDateTimeNow());
+    keysInfoDeleted.setKeyType(KeyType.CPF);
+
+    when(keysRepository.findById(Mockito.anyString())).thenReturn(Optional.of(keysInfoToDelete));
+    when(keysRepository.save(Mockito.any())).thenReturn(keysInfoDeleted);
+    Assert.assertNotNull(keyLockerService.deleteById(keysInfoToDelete.getId()).getDeletedAt());
+  }
+
+  @Test
+  public void shouldDeleteAKeyWhenKeyIsAlreadyDeleted() {
+    KeysInfo keysInfoToDelete = new KeysInfo();
+    keysInfoToDelete.setId("63c08424b0940a7217195c5e");
+    keysInfoToDelete.setDeletedAt(new FormattedDateTime().getFormattedDateTimeNow());
+    keysInfoToDelete.setCreatedAt(new FormattedDateTime().getFormattedDateTimeNow());
+    keysInfoToDelete.setKeyType(KeyType.CPF);
+
+    when(keysRepository.findById(Mockito.anyString())).thenReturn(Optional.of(keysInfoToDelete));
+
+    exception.expect(DeleteKeyException.class);
+    keyLockerService.deleteById(keysInfoToDelete.getId());
+  }
+
+  @Test
+  public void shouldDeleteAKeyWhenKeyIsWasNotFound() {
+    when(keysRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
+    exception.expect(KeyNotFoundException.class);
+    keyLockerService.deleteById("63c08424b0940a7217195c5e");
   }
 
   @Test
@@ -173,6 +248,5 @@ public class KeyLockerServiceTest {
 
     Assert.assertThrows(KeyNotFoundException.class,
         () -> keyLockerService.updateKey(updateKeyRequestDto));
-
   }
 }

@@ -1,11 +1,14 @@
 package br.com.lucassmelo.keylocker.service;
 
+import br.com.lucassmelo.keylocker.FormattedDateTime;
 import br.com.lucassmelo.keylocker.RandomPixKeyGenerator;
 import br.com.lucassmelo.keylocker.dto.CreateKeyResponseDto;
+import br.com.lucassmelo.keylocker.dto.DeleteKeyResponseDto;
 import br.com.lucassmelo.keylocker.dto.KeyRequestDto;
 import br.com.lucassmelo.keylocker.dto.UpdateKeyRequestDto;
 import br.com.lucassmelo.keylocker.dto.UpdateKeyResponseDto;
 import br.com.lucassmelo.keylocker.enums.KeyType;
+import br.com.lucassmelo.keylocker.exception.DeleteKeyException;
 import br.com.lucassmelo.keylocker.exception.InvalidOperationException;
 import br.com.lucassmelo.keylocker.exception.KeyNotFoundException;
 import br.com.lucassmelo.keylocker.logic.AccountNumberManager;
@@ -14,7 +17,10 @@ import br.com.lucassmelo.keylocker.logic.KeyTypeValidations;
 import br.com.lucassmelo.keylocker.logic.QuantityKeysValidations;
 import br.com.lucassmelo.keylocker.repository.KeysInfo;
 import br.com.lucassmelo.keylocker.repository.KeysRepository;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +73,7 @@ public class KeyLockerService {
             updateKeyRequestDto.getKeyType().name()));
       }
       logger.info("Iniciando validação para atualização de chaves");
+      verifyKeyIsAlreadyDeleted(keyToUpdate);
       executeKeyTypeValidations(updateKeyRequestDto.getValue(),
           updateKeyRequestDto.getKeyType().name());
       executeQuantityValidations(updateKeyRequestDto.getValue(),
@@ -88,10 +95,33 @@ public class KeyLockerService {
       updateKeyResponseDto.setAccountHolderLastName(keysInfo.getAccountHolderLastName());
       logger.info("Finalizando processo de atualização de chave com sucesso");
       return updateKeyResponseDto;
+
     } else {
       logger.error("Não foi possível atualizar uma chave do tipo aleatória");
       throw new InvalidOperationException("Não é possível alterar uma chave aleatória");
     }
+  }
+
+  public DeleteKeyResponseDto deleteById(final String keyId) {
+    KeysInfo keysInfoToDelete = getKeyById(keyId);
+    verifyKeyIsAlreadyDeleted(keysInfoToDelete);
+
+    keysInfoToDelete.setDeletedAt(new FormattedDateTime().getFormattedDateTimeNow());
+
+    KeysInfo keysInfo = keysRepository.save(keysInfoToDelete);
+
+    DeleteKeyResponseDto deleteKeyResponseDto = new DeleteKeyResponseDto();
+    deleteKeyResponseDto.setId(keysInfo.getId());
+    deleteKeyResponseDto.setKeyType(keysInfo.getKeyType());
+    deleteKeyResponseDto.setValue(keysInfo.getValue());
+    deleteKeyResponseDto.setAgencyNumber(keysInfo.getAgencyNumber());
+    deleteKeyResponseDto.setAccountNumber(keysInfo.getAccountNumber());
+    deleteKeyResponseDto.setAccountType(keysInfo.getAccountType());
+    deleteKeyResponseDto.setAccountHolderFirstName(keysInfo.getAccountHolderFirstName());
+    deleteKeyResponseDto.setAccountHolderLastName(keysInfo.getAccountHolderLastName());
+    deleteKeyResponseDto.setCreatedAt(keysInfo.getCreatedAt());
+    deleteKeyResponseDto.setDeletedAt(keysInfo.getDeletedAt());
+    return deleteKeyResponseDto;
   }
 
 
@@ -106,8 +136,7 @@ public class KeyLockerService {
       return foundKeyInfo.get();
     } else {
       logger.error("Não foi encontrada nenhuma chave");
-      throw new KeyNotFoundException(String.format("Uma chave com o id %s não foi encontrada",
-          keyId));
+      throw new KeyNotFoundException(keyId);
     }
 
   }
@@ -128,6 +157,7 @@ public class KeyLockerService {
     keysInfo.setAccountNumber(keyRequestDto.getAccountNumber());
     keysInfo.setAccountHolderFirstName(keyRequestDto.getAccountHolderFirstName());
     keysInfo.setAccountHolderLastName(keyRequestDto.getAccountHolderLastName());
+    keysInfo.setCreatedAt(getFormattedDateTimeNow());
     return keysInfo;
   }
 
@@ -147,5 +177,16 @@ public class KeyLockerService {
         keyType);
     quantityKeysValidations.validateLimitKeyTypeByAccount(keyValue,
         keyType);
+  }
+
+  private String getFormattedDateTimeNow() {
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+    return LocalDateTime.now().format(dateTimeFormatter);
+  }
+
+  private void verifyKeyIsAlreadyDeleted(final KeysInfo keysInfo) {
+    if (Objects.nonNull(keysInfo.getDeletedAt())) {
+      throw new DeleteKeyException(keysInfo.getId());
+    }
   }
 }

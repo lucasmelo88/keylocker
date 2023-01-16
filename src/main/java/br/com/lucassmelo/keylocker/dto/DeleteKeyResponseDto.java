@@ -1,15 +1,10 @@
-package br.com.lucassmelo.keylocker.repository;
+package br.com.lucassmelo.keylocker.dto;
 
 import br.com.lucassmelo.keylocker.enums.AccountType;
 import br.com.lucassmelo.keylocker.enums.KeyType;
-import java.util.Date;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "keysInfo")
-public class KeysInfo {
+public class DeleteKeyResponseDto {
 
-  @Id
   private String id;
   private KeyType keyType;
   private String value;
@@ -18,12 +13,10 @@ public class KeysInfo {
   private String accountNumber;
   private String accountHolderFirstName;
   private String accountHolderLastName;
-
   private String createdAt;
-
   private String deletedAt;
 
-  public KeysInfo() {
+  public DeleteKeyResponseDto() {
   }
 
   public String getId() {

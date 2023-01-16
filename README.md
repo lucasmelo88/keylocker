@@ -1,10 +1,10 @@
 # Running remotely
 
-### Build, compile and test application
+### Build, compile, test and run application
 * mvn clean install
-### Build image application
+### Build docker image application
 * docker build --tag keylocker:0.0.1-SNAPSHOT .
-### Pull and start application
+### Pull images and start application
 * docker-compose up
 ### Access swagger docs
 * http://{docker-container-ipv4}:8082/keylocker/swagger-ui.html
