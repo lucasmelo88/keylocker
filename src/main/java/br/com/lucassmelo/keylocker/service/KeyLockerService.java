@@ -17,8 +17,6 @@ import br.com.lucassmelo.keylocker.logic.KeyTypeValidations;
 import br.com.lucassmelo.keylocker.logic.QuantityKeysValidations;
 import br.com.lucassmelo.keylocker.repository.KeysInfo;
 import br.com.lucassmelo.keylocker.repository.KeysRepository;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -157,7 +155,7 @@ public class KeyLockerService {
     keysInfo.setAccountNumber(keyRequestDto.getAccountNumber());
     keysInfo.setAccountHolderFirstName(keyRequestDto.getAccountHolderFirstName());
     keysInfo.setAccountHolderLastName(keyRequestDto.getAccountHolderLastName());
-    keysInfo.setCreatedAt(getFormattedDateTimeNow());
+    keysInfo.setCreatedAt(new FormattedDateTime().getFormattedDateTimeNow());
     return keysInfo;
   }
 
@@ -177,11 +175,6 @@ public class KeyLockerService {
         keyType);
     quantityKeysValidations.validateLimitKeyTypeByAccount(keyValue,
         keyType);
-  }
-
-  private String getFormattedDateTimeNow() {
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-    return LocalDateTime.now().format(dateTimeFormatter);
   }
 
   private void verifyKeyIsAlreadyDeleted(final KeysInfo keysInfo) {

@@ -2,6 +2,7 @@ package br.com.lucassmelo.keylocker.repository;
 
 import br.com.lucassmelo.keylocker.enums.AccountType;
 import br.com.lucassmelo.keylocker.enums.KeyType;
+import java.time.LocalDateTime;
 import java.util.Date;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -19,9 +20,9 @@ public class KeysInfo {
   private String accountHolderFirstName;
   private String accountHolderLastName;
 
-  private String createdAt;
+  private LocalDateTime createdAt;
 
-  private String deletedAt;
+  private LocalDateTime deletedAt;
 
   public KeysInfo() {
   }
@@ -90,19 +91,19 @@ public class KeysInfo {
     this.accountHolderLastName = accountHolderLastName;
   }
 
-  public String getCreatedAt() {
+  public LocalDateTime getCreatedAt() {
     return createdAt;
   }
 
-  public void setCreatedAt(String createdAt) {
+  public void setCreatedAt(LocalDateTime createdAt) {
     this.createdAt = createdAt;
   }
 
-  public String getDeletedAt() {
+  public LocalDateTime getDeletedAt() {
     return deletedAt;
   }
 
-  public void setDeletedAt(String deletedAt) {
+  public void setDeletedAt(LocalDateTime deletedAt) {
     this.deletedAt = deletedAt;
   }
 }

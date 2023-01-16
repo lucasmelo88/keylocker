@@ -5,12 +5,10 @@ import java.time.format.DateTimeFormatter;
 
 public class FormattedDateTime {
 
-  public FormattedDateTime() {
-  }
-
-  public String getFormattedDateTimeNow() {
+  public LocalDateTime getFormattedDateTimeNow() {
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-    return LocalDateTime.now().format(dateTimeFormatter);
+    String formattedDate = dateTimeFormatter.format(LocalDateTime.now());
+    return LocalDateTime.parse(formattedDate, dateTimeFormatter);
   }
 
 }
