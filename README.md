@@ -1,5 +1,8 @@
 # Running remotely
-
+## Requirements
+* Java 11
+* Docker
+* Maven
 ### Build, compile, test and run application
 * mvn clean install
 ### Build docker image application
