@@ -3,13 +3,15 @@ package br.com.lucassmelo.keylocker.logic;
 import br.com.lucassmelo.keylocker.exception.InvalidKeyException;
 import br.com.lucassmelo.keylocker.service.CellphonePixKey;
 import br.com.lucassmelo.keylocker.service.EmailPixKey;
-import br.com.lucassmelo.keylocker.service.KeyLockerService;
 import br.com.lucassmelo.keylocker.service.LegalEntityPixKey;
 import br.com.lucassmelo.keylocker.service.NaturalPersonPixKey;
+import br.com.lucassmelo.keylocker.service.PixKey;
+import br.com.lucassmelo.keylocker.service.RandomPixKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class KeyTypeValidations {
+
   private final String keyValue;
   private final String keyType;
   private boolean isValid = false;
@@ -21,29 +23,26 @@ public class KeyTypeValidations {
     this.keyValue = keyValue;
   }
 
-  public void validate() {
+  public PixKey validate() {
     switch (keyType) {
       case "CELULAR":
-        isValid = new CellphonePixKey(keyValue).isValid();
-        break;
+        return new CellphonePixKey(keyValue);
       case "EMAIL":
-        isValid = new EmailPixKey(keyValue).isValid();
-        break;
+        return new EmailPixKey(keyValue);
       case "CPF":
-        isValid = new NaturalPersonPixKey(keyValue).isValid();
-        break;
+        return new NaturalPersonPixKey(keyValue);
       case "CNPJ":
-        isValid = new LegalEntityPixKey(keyValue).isValid();
-        break;
+        return new LegalEntityPixKey(keyValue);
       case "ALEATORIA":
-        isValid = true;
-        break;
+        return new RandomPixKey();
+      default:
+        return null;
     }
   }
 
   public boolean validateKeyValue() {
-    validate();
-    if (!isValid) {
+    PixKey pixKey = validate();
+    if (pixKey == null || !pixKey.isValid()) {
       logger.error("Chave inválida! O Valor informado não é suportado para nenhum tipo de chave");
       throw new InvalidKeyException(keyType);
     }

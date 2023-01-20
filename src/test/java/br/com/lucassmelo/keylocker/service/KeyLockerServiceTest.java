@@ -3,7 +3,6 @@ package br.com.lucassmelo.keylocker.service;
 import static org.mockito.Mockito.when;
 
 import br.com.lucassmelo.keylocker.FormattedDateTime;
-import br.com.lucassmelo.keylocker.RandomPixKeyGenerator;
 import br.com.lucassmelo.keylocker.dto.CreateKeyResponseDto;
 import br.com.lucassmelo.keylocker.dto.KeyRequestDto;
 import br.com.lucassmelo.keylocker.dto.UpdateKeyRequestDto;
@@ -15,7 +14,6 @@ import br.com.lucassmelo.keylocker.exception.InvalidOperationException;
 import br.com.lucassmelo.keylocker.exception.KeyNotFoundException;
 import br.com.lucassmelo.keylocker.repository.KeysInfo;
 import br.com.lucassmelo.keylocker.repository.KeysRepository;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -79,7 +77,7 @@ public class KeyLockerServiceTest {
     keyRequestDto.setAccountHolderFirstName("Joao");
     keyRequestDto.setAccountHolderLastName("Silva");
 
-    String randomGeneratedKey = new RandomPixKeyGenerator().generateKey();
+    String randomGeneratedKey = new RandomPixKey().generateKey();
     KeysInfo mockKeyInfo = new KeysInfo();
     mockKeyInfo.setId("63c08424b0940a7217195c5e");
     mockKeyInfo.setKeyType(KeyType.ALEATORIA);

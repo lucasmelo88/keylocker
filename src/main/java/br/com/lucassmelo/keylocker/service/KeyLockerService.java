@@ -1,7 +1,6 @@
 package br.com.lucassmelo.keylocker.service;
 
 import br.com.lucassmelo.keylocker.FormattedDateTime;
-import br.com.lucassmelo.keylocker.RandomPixKeyGenerator;
 import br.com.lucassmelo.keylocker.dto.CreateKeyResponseDto;
 import br.com.lucassmelo.keylocker.dto.DeleteKeyResponseDto;
 import br.com.lucassmelo.keylocker.dto.KeyRequestDto;
@@ -143,7 +142,7 @@ public class KeyLockerService {
     KeysInfo keysInfo = new KeysInfo();
     if (isRandomKey(keyRequestDto)) {
       logger.info("A chave informada é do tipo aleatoria, gerando...");
-      String randomKey = new RandomPixKeyGenerator().generateKey();
+      String randomKey = new RandomPixKey().generateKey();
       logger.info("A chave aleatoria gerada: {}", randomKey);
       keysInfo.setValue(randomKey);
     } else {

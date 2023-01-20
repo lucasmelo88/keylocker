@@ -1,8 +1,20 @@
-package br.com.lucassmelo.keylocker;
+package br.com.lucassmelo.keylocker.service;
 
-public class RandomPixKeyGenerator {
+import br.com.lucassmelo.keylocker.enums.KeyType;
+
+public class RandomPixKey implements PixKey {
 
   private static final int KEY_SIZE = 36;
+
+  @Override
+  public boolean isValid() {
+    return true;
+  }
+
+  @Override
+  public KeyType keyType() {
+    return KeyType.ALEATORIA;
+  }
 
   public String generateKey() {
 
